@@ -18,28 +18,30 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
 import com.google.auto.service.AutoService;
 
-import io.my.mybatis.annotation.RepositoryMakers;
+import io.my.mybatis.annotation.RepositoryMaker;
 import io.my.mybatis.exception.ProcessingException;
 import io.my.mybatis.generator.RepositoryGenerator;
 
 @AutoService(Processor.class)
 public class RepositoryProcessor extends AbstractProcessor {
+
     private Elements elementUtils;
     private Filer filer;
     private Messager messager;
+    private Types typeUtils;
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        for (Element annotationElement : roundEnv.getElementsAnnotatedWith(RepositoryMakers.class)) {
-
+        for (Element annotationElement : roundEnv.getElementsAnnotatedWith(RepositoryMaker.class)) {
             if (annotationElement.getKind() != ElementKind.CLASS) {
                 throw new ProcessingException(annotationElement, "only classes can be annotated with @%s",
-                        RepositoryMakers.class.getSimpleName());
+                        RepositoryMaker.class.getSimpleName());
             }
             TypeElement typeElement = (TypeElement) annotationElement;
 
@@ -66,7 +68,7 @@ public class RepositoryProcessor extends AbstractProcessor {
         if (classElement.getModifiers().contains(Modifier.ABSTRACT)) {
             throw new ProcessingException(classElement,
                     "The class %s is abstract. You can't annotate abstract classes with @%",
-                    classElement.getQualifiedName().toString(), RepositoryMakers.class.getSimpleName());
+                    classElement.getQualifiedName().toString(), RepositoryMaker.class.getSimpleName());
         }
 
         // Check if an empty public constructor is given
@@ -104,15 +106,17 @@ public class RepositoryProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         
+        typeUtils = processingEnv.getTypeUtils();
         elementUtils = processingEnv.getElementUtils();
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
+
     }
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> annotataions = new LinkedHashSet<String>();
-        annotataions.add(RepositoryMakers.class.getCanonicalName());
+        annotataions.add(RepositoryMaker.class.getCanonicalName());
         return annotataions;
     }
 

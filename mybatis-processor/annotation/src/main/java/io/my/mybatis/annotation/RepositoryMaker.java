@@ -8,8 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface RepositoryMaker {
-    String id();
-    Class<?> returnType() default String.class;
-    Class<?>[] params();
-    String[] paramNames();
+    String table() default "";
 }
