@@ -1,6 +1,7 @@
 package io.my.mybatis.generator;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.processing.Filer;
@@ -11,19 +12,24 @@ import javax.lang.model.element.TypeElement;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeSpec.Builder;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import io.my.mybatis.annotation.Find;
 import io.my.mybatis.annotation.Id;
 import io.my.mybatis.annotation.RepositoryMaker;
+import io.my.mybatis.util.NamingStrategy;
 import io.my.mybatis.util.RepositoryUtil;
 
 
 public class RepositoryGenerator {
-
+    private static Logger logger = LoggerFactory.getLogger(RepositoryGenerator.class);
     private static final String REPOSITORY = "Repository";
 
     private RepositoryGenerator() {
@@ -38,7 +44,10 @@ public class RepositoryGenerator {
 
         TypeElement typeElement = (TypeElement) annotationElement;
 
-        String tableName = repositoryMaker.table();
+        String tableName = repositoryMaker.table().equals("") ? 
+                    NamingStrategy.camelToSnake(annotationElement.getSimpleName().toString()) : 
+                    repositoryMaker.table()
+        ;
 
         // Generate items map
         Builder builder = TypeSpec.interfaceBuilder(repositoryName);
@@ -47,48 +56,69 @@ public class RepositoryGenerator {
         List<Element> fieldList = RepositoryUtil.getFieldList(typeElement);
 
         // Generate Methods
-        MethodSpec select = generateSelect(annotationElement, fieldList, tableName);
+        List<MethodSpec> selectList = generateSelect(annotationElement, fieldList, Object.class, tableName);
         
         // add Method in Builder
-        builder.addMethod(select);
-        builder.addAnnotation(Mapper.class).addModifiers(Modifier.PUBLIC);
+        selectList.forEach(builder::addMethod);
+
+        builder.addAnnotation(Mapper.class)
+                .addModifiers(Modifier.PUBLIC);
         
         // Write file
         JavaFile javaFile = JavaFile.builder(packageName, builder.build()).build();
         javaFile.writeTo(filer);
     }
 
-    private static MethodSpec generateSelect(Element annotationElement, List<Element> fieldList, String tableName) throws ClassNotFoundException {
+    private static List<MethodSpec> generateSelect(
+        Element annotationElement, 
+        List<Element> fieldList, 
+        Class<?> returnType, 
+        String tableName) throws ClassNotFoundException {
 
-        String idFieldName = null;
-        String idColumnName = null;
-        Class<?> idClass = annotationElement.asType().getClass();
-
+        List<MethodSpec> result = new ArrayList<>();
+        
         for (Element e : fieldList) {
-            Id id = e.getAnnotation(Id.class);
-            if (id != null) {
-                idFieldName = e.toString();
-                idColumnName = id.id().equals("") ? idFieldName : id.id();
-                idClass = e.asType().getClass();
+            MethodSpec method = generateSelect((TypeElement) annotationElement, e, tableName);
+
+            if (method != null) {
+                result.add(method);
             }
         }
 
-        if (idFieldName == null) {
+        return result;
+    }
+
+    private static MethodSpec generateSelect(TypeElement typeElement, Element e, String tableName) throws ClassNotFoundException {
+        String fieldName = null;
+        String columnName = null;
+        
+        Id id = e.getAnnotation(Id.class);
+        Find find = e.getAnnotation(Find.class);
+        if (id != null) {
+            fieldName = e.toString();
+            columnName = columnName(id.fieldName(), fieldName);
+        } else if (find != null) {
+            fieldName = e.toString();
+            columnName = columnName(find.fieldName(), fieldName);
+        }
+        logger.info(
+            "\nfieldName: {} \ncolumnName: {}", fieldName, columnName);
+
+        if (fieldName == null || columnName == null) {
             return null;
         }
 
-        String selectQuery = selectQuery(tableName, idColumnName, idFieldName);
-        System.out.println(selectQuery);
+        String selectQuery = selectQuery(tableName, columnName, fieldName);
 
         AnnotationSpec selectAnnotation = selectAnnotation(selectQuery);
-
-        return MethodSpec.methodBuilder("findById")
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+        return MethodSpec.methodBuilder("findBy" + String.valueOf(NamingStrategy.firstCharUpper(fieldName)))
+                        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                         .addAnnotation(selectAnnotation)
-                        .addParameter(idClass, idFieldName)
-                        .returns(Class.forName(annotationElement.toString()))
+                        .addParameter(TypeName.get(e.asType()), fieldName)
+                        .returns(TypeName.get(typeElement.asType()))
                         .build()
         ;
+
     }
 
     private static String selectQuery(String tableName, String columnName, String fieldName) {
@@ -104,8 +134,16 @@ public class RepositoryGenerator {
 
     private static AnnotationSpec selectAnnotation(String selectQuery) {
         return AnnotationSpec.builder(Select.class)
-                            .addMember("value", selectQuery)
+                            .addMember("value", "$S", selectQuery)
                             .build();
+    }
+
+    private static String columnName(String column, String field) {
+        if (column != null && !column.equals("")) {
+            return column;
+        } else {
+            return NamingStrategy.camelToSnake(field);
+        }
     }
 
 

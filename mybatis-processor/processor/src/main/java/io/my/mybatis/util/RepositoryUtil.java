@@ -24,15 +24,25 @@ public class RepositoryUtil {
 
         return fieldList;
     }
-    
 
+    public static Class<?> getClass(TypeElement typeElement) throws ClassNotFoundException {
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
 
-    // public static Class<?> getReturnType(RepositoryMaker repository) throws ClassNotFoundException {
+        String className = typeElement.getQualifiedName().toString();
+        return Class.forName(className, true, systemClassLoader);
+    }
+
+    // public static Class<?> getReturnType(RepositoryMaker repository) {
     //     try {
     //         return repository.returnType();
     //     } catch (MirroredTypeException e) {
-    //         return Class.forName(e.getTypeMirror().toString());
+    //         try {
+    //             return Class.forName(e.getTypeMirror().toString());
+    //         } catch (ClassNotFoundException e1) {
+    //             e1.printStackTrace();
+    //         }
     //     }
+    //     return null;
     // }
 
     // public static List<Class<?>> getParams(RepositoryMaker repository) {

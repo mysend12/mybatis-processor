@@ -18,10 +18,12 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
 import com.google.auto.service.AutoService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.my.mybatis.annotation.RepositoryMaker;
 import io.my.mybatis.exception.ProcessingException;
@@ -29,11 +31,11 @@ import io.my.mybatis.generator.RepositoryGenerator;
 
 @AutoService(Processor.class)
 public class RepositoryProcessor extends AbstractProcessor {
+    Logger log = LoggerFactory.getLogger(RepositoryProcessor.class);
 
     private Elements elementUtils;
     private Filer filer;
     private Messager messager;
-    private Types typeUtils;
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -105,8 +107,6 @@ public class RepositoryProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        
-        typeUtils = processingEnv.getTypeUtils();
         elementUtils = processingEnv.getElementUtils();
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
