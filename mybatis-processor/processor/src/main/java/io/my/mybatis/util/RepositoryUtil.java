@@ -3,10 +3,9 @@ package io.my.mybatis.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.lang.model.type.MirroredTypeException;
-import javax.lang.model.type.MirroredTypesException;
-
-import io.my.mybatis.annotation.RepositoryMaker;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 
 public class RepositoryUtil {
 
@@ -14,29 +13,52 @@ public class RepositoryUtil {
         throw new IllegalAccessError();
     }
 
-    public static Class<?> getReturnType(RepositoryMaker repository) throws ClassNotFoundException {
-        try {
-            return repository.returnType();
-        } catch (MirroredTypeException e) {
-            return Class.forName(e.getTypeMirror().toString());
-        }
+    public static List<Element> getFieldList(TypeElement typeElement) {
+        List<Element> fieldList = new ArrayList<>();
+
+        typeElement.getEnclosedElements().forEach(type -> {
+            if (type.getKind() == ElementKind.FIELD) {
+                fieldList.add(type);
+            }
+        });
+
+        return fieldList;
     }
 
-    public static List<Class<?>> getParams(RepositoryMaker repository) {
-        List<Class<?>> classList = new ArrayList<>();
+    public static Class<?> getClass(TypeElement typeElement) throws ClassNotFoundException {
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
 
-        try {
-            return List.of(repository.params());
-        } catch (MirroredTypesException e) {
-            e.getTypeMirrors().forEach(typeMirror -> {
-                try {
-                    classList.add(Class.forName(typeMirror.toString()));
-                } catch (ClassNotFoundException e1) {
-                }
-            });
-        }
-
-        return classList;
+        String className = typeElement.getQualifiedName().toString();
+        return Class.forName(className, true, systemClassLoader);
     }
-    
+
+    // public static Class<?> getReturnType(RepositoryMaker repository) {
+    //     try {
+    //         return repository.returnType();
+    //     } catch (MirroredTypeException e) {
+    //         try {
+    //             return Class.forName(e.getTypeMirror().toString());
+    //         } catch (ClassNotFoundException e1) {
+    //             e1.printStackTrace();
+    //         }
+    //     }
+    //     return null;
+    // }
+
+    // public static List<Class<?>> getParams(RepositoryMaker repository) {
+    //     List<Class<?>> classList = new ArrayList<>();
+
+    //     try {
+    //         return List.of(repository.params());
+    //     } catch (MirroredTypesException e) {
+    //         e.getTypeMirrors().forEach(typeMirror -> {
+    //             try {
+    //                 classList.add(Class.forName(typeMirror.toString()));
+    //             } catch (ClassNotFoundException e1) {
+    //             }
+    //         });
+    //     }
+
+    //     return classList;
+    // }
 }
