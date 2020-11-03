@@ -8,6 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Id {
-    String columnName() default "";
-    boolean isAutoIncrement() default true;
+    String fieldName() default "";
 }

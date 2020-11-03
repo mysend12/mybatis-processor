@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Find {
-    String columnName() default "";
+    String fieldName() default "";
     boolean isList() default false;
 }
