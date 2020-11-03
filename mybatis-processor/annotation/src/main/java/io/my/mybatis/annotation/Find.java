@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Find {
     String fieldName() default "";
+    boolean isList() default false;
 }

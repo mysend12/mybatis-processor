@@ -10,8 +10,10 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeSpec.Builder;
@@ -91,7 +93,8 @@ public class RepositoryGenerator {
     private static MethodSpec generateSelect(TypeElement typeElement, Element e, String tableName) throws ClassNotFoundException {
         String fieldName = null;
         String columnName = null;
-        
+        TypeName returnType = TypeName.get(typeElement.asType());
+
         Id id = e.getAnnotation(Id.class);
         Find find = e.getAnnotation(Find.class);
         if (id != null) {
@@ -100,7 +103,12 @@ public class RepositoryGenerator {
         } else if (find != null) {
             fieldName = e.toString();
             columnName = columnName(find.fieldName(), fieldName);
+            returnType = find.isList() ? 
+                        ParameterizedTypeName.get(ClassName.get(List.class), returnType) : 
+                        returnType
+            ;
         }
+        
         logger.info(
             "\nfieldName: {} \ncolumnName: {}", fieldName, columnName);
 
@@ -110,12 +118,14 @@ public class RepositoryGenerator {
 
         String selectQuery = selectQuery(tableName, columnName, fieldName);
 
+        
+
         AnnotationSpec selectAnnotation = selectAnnotation(selectQuery);
         return MethodSpec.methodBuilder("findBy" + String.valueOf(NamingStrategy.firstCharUpper(fieldName)))
                         .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                         .addAnnotation(selectAnnotation)
                         .addParameter(TypeName.get(e.asType()), fieldName)
-                        .returns(TypeName.get(typeElement.asType()))
+                        .returns(returnType)
                         .build()
         ;
 
