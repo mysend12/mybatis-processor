@@ -18,11 +18,11 @@ public class AnnotationGenerator {
         return generateAnnotation(Select.class, selectQuery);
     }
     
-    private static AnnotationSpec insertAnnotation(String insertQuery) {
+    public static AnnotationSpec insertAnnotation(String insertQuery) {
         return generateAnnotation(Insert.class, insertQuery);
     }
 
-    private static AnnotationSpec generateAnnotation(Class<?> clz, String query) {
+    public static AnnotationSpec generateAnnotation(Class<?> clz, String query) {
         return AnnotationSpec.builder(clz)
                             .addMember("value", "$S", query)
                             .build();

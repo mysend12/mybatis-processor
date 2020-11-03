@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import io.my.mybatis.annotation.Find;
 import io.my.mybatis.annotation.Id;
 import io.my.mybatis.util.NamingStrategy;
+import io.my.mybatis.util.RepositoryUtil;
 
 public class MethodGenerator {
     private static Logger logger = LoggerFactory.getLogger(MethodGenerator.class);
@@ -27,7 +28,7 @@ public class MethodGenerator {
         throw new IllegalAccessError();
     }
 
-    public static List<MethodSpec> generateSelect(
+    public static List<MethodSpec> generateSelectList(
         Element annotationElement, 
         List<Element> fieldList, 
         Class<?> returnType, 
@@ -55,10 +56,10 @@ public class MethodGenerator {
         Find find = e.getAnnotation(Find.class);
         if (id != null) {
             fieldName = e.toString();
-            columnName = columnName(id.fieldName(), fieldName);
+            columnName = RepositoryUtil.columnName(id.columnName(), fieldName);
         } else if (find != null) {
             fieldName = e.toString();
-            columnName = columnName(find.fieldName(), fieldName);
+            columnName = RepositoryUtil.columnName(find.columnName(), fieldName);
             returnType = find.isList() ? 
                         ParameterizedTypeName.get(ClassName.get(List.class), returnType) : 
                         returnType
@@ -83,17 +84,41 @@ public class MethodGenerator {
                         .returns(returnType)
                         .build()
         ;
-
     }
 
-    private static String columnName(String column, String field) {
-        if (column != null && !column.equals("")) {
-            return column;
-        } else {
-            return NamingStrategy.camelToSnake(field);
-        }
+    public static MethodSpec generateInsert(TypeElement typeElement, List<Element> fieldElementList, String tableName) {
+        List<String> fieldList = new ArrayList<>();
+        List<String> columnList = new ArrayList<>();
+
+        fieldElementList.forEach(e -> {
+            Id id = e.getAnnotation(Id.class);
+            Find find = e.getAnnotation(Find.class);
+
+            if (id != null && id.isAutoIncrement()) {
+                return;
+            } else if (find != null && !find.columnName().equals("")) {
+                columnList.add(find.columnName());
+                fieldList.add(e.toString());
+                return;
+            } else {
+                columnList.add(NamingStrategy.camelToSnake(e.toString()));
+                fieldList.add(e.toString());
+            }
+        });
+
+        String insertQuery = QueryGenerator.insertQuery(tableName, columnList, fieldList);
+        AnnotationSpec insertAnnotation = AnnotationGenerator.insertAnnotation(insertQuery);
+        
+        TypeName classTypeName = TypeName.get(typeElement.asType());
+        String className = typeElement.getSimpleName().toString();
+
+        return MethodSpec.methodBuilder("insert" + className)
+                        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                        .addAnnotation(insertAnnotation)
+                        .addParameter(classTypeName, tableName)
+                        .returns(TypeName.INT)
+                        .build()
+        ;
     }
-
-
 
 }
