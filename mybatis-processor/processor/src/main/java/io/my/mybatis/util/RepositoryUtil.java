@@ -32,6 +32,14 @@ public class RepositoryUtil {
         return Class.forName(className, true, systemClassLoader);
     }
 
+    public static String columnName(String column, String field) {
+        if (column != null && !column.equals("")) {
+            return column;
+        } else {
+            return NamingStrategy.camelToSnake(field);
+        }
+    }
+
     // public static Class<?> getReturnType(RepositoryMaker repository) {
     //     try {
     //         return repository.returnType();

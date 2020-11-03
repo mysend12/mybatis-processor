@@ -1,6 +1,7 @@
 package io.my.mybatis.generator;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.processing.Filer;
@@ -47,13 +48,19 @@ public class RepositoryGenerator {
         Builder builder = TypeSpec.interfaceBuilder(repositoryName);
         
         // Get Class Fields
-        List<Element> fieldList = RepositoryUtil.getFieldList(typeElement);
+        List<Element> fieldElementList = RepositoryUtil.getFieldList(typeElement);
 
-        // Generate Methods
-        List<MethodSpec> selectList = MethodGenerator.generateSelect(annotationElement, fieldList, Object.class, tableName);
+        // Declare MethodSpec List
+        List<MethodSpec> methodList = new ArrayList<>();
+
+        // Generate Select Methods
+        methodList.addAll(MethodGenerator.generateSelectList(annotationElement, fieldElementList, Object.class, tableName));
+
+        // Generate Insert Method
+        methodList.add(MethodGenerator.generateInsert(typeElement, fieldElementList, tableName));
         
-        // Add Method in Builder
-        selectList.forEach(builder::addMethod);
+        // Add all Methods in Builder
+        methodList.forEach(builder::addMethod);
 
         builder.addAnnotation(Mapper.class)
                 .addModifiers(Modifier.PUBLIC);
