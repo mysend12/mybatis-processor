@@ -6,6 +6,14 @@ public class NamingStrategy {
         throw new IllegalAccessError();
     }
 
+    public static String columnName(String column, String field) {
+        if (column != null && !column.equals("")) {
+            return column;
+        } else {
+            return NamingStrategy.camelToSnake(field);
+        }
+    }
+
     public static String camelToSnake(String str) {
         StringBuilder sb = new StringBuilder();
         char[] charArr = firstCharLower(str);
