@@ -2,8 +2,6 @@ package io.my.mybatis.generator;
 
 import java.util.List;
 
-import javax.lang.model.element.Element;
-
 public class QueryGenerator {
 
     private QueryGenerator() {
