@@ -4,6 +4,7 @@ import com.squareup.javapoet.AnnotationSpec;
 
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,10 @@ public class AnnotationGenerator {
     
     public static AnnotationSpec insertAnnotation(String insertQuery) {
         return generateAnnotation(Insert.class, insertQuery);
+    }
+
+    public static AnnotationSpec updateAnnotataion(String updateQuery) {
+        return generateAnnotation(Update.class, updateQuery);
     }
 
     public static AnnotationSpec generateAnnotation(Class<?> clz, String query) {
