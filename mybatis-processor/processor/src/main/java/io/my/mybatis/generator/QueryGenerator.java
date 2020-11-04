@@ -2,6 +2,8 @@ package io.my.mybatis.generator;
 
 import java.util.List;
 
+import javax.lang.model.element.Element;
+
 public class QueryGenerator {
 
     private QueryGenerator() {
@@ -44,6 +46,43 @@ public class QueryGenerator {
         }
 
         sb.append("#{").append(fieldList.get(columnCount)).append("}").append(")");
+
+        return sb.toString();
+    }
+
+    public static String updateQuery(
+        String tableName, 
+        List<String> columnList, 
+        List<String> fieldList, 
+        String conditionField, 
+        String conditionColumn) {
+
+        if (columnList.isEmpty() || 
+            fieldList.isEmpty() || 
+            columnList.size() != fieldList.size()) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ").append(tableName).append(" SET ");
+
+        int columnCount = columnList.size() - 1;
+        
+        for (int i=0;i<columnCount; i++) {
+            sb.append(columnList.get(i)).append("=").append("#{").append(fieldList.get(i)).append("}, ");
+        }
+
+        sb.append(columnList.get(columnCount))
+            .append("=")
+            .append("#{")
+            .append(fieldList.get(columnCount))
+            .append("}")
+            .append(" WHERE ")
+            .append(conditionColumn)
+            .append("=")
+            .append("#{")
+            .append(conditionField)
+            .append("}");
 
         return sb.toString();
     }

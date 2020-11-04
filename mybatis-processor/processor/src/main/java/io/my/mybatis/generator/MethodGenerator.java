@@ -121,4 +121,42 @@ public class MethodGenerator {
         ;
     }
 
+    public static MethodSpec generateUpdate(TypeElement typeElement, List<Element> fieldElementList, String tableName) {
+        List<String> fieldList = new ArrayList<>();
+        List<String> columnList = new ArrayList<>();
+        String conditionField = null;
+        String conditionColumn = null;
+
+        for (Element e : fieldElementList) {
+            Id id = e.getAnnotation(Id.class);
+            Find find = e.getAnnotation(Find.class);
+
+            if (id != null) {
+                conditionField = e.toString();
+                conditionColumn = id.columnName().equals("") ? 
+                    NamingStrategy.camelToSnake(conditionField) : id.columnName();
+
+            } else if (find != null && !find.columnName().equals("")) {
+                columnList.add(find.columnName());
+                fieldList.add(e.toString());
+            } else {
+                columnList.add(NamingStrategy.camelToSnake(e.toString()));
+                fieldList.add(e.toString());
+            }
+        }
+
+        String updateQuery = QueryGenerator.updateQuery(tableName, columnList, fieldList, conditionField, conditionColumn);
+        AnnotationSpec updateAnnotation = AnnotationGenerator.updateAnnotataion(updateQuery);
+        
+        TypeName classTypeName = TypeName.get(typeElement.asType());
+        String className = typeElement.getSimpleName().toString();
+
+        return MethodSpec.methodBuilder("update" + className)
+                        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                        .addAnnotation(updateAnnotation)
+                        .addParameter(classTypeName, tableName)
+                        .returns(TypeName.INT)
+                        .build();
+    }
+
 }

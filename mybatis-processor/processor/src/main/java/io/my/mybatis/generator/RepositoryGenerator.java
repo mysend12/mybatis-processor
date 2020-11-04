@@ -59,6 +59,9 @@ public class RepositoryGenerator {
         // Generate Insert Method
         methodList.add(MethodGenerator.generateInsert(typeElement, fieldElementList, tableName));
         
+        // Generate Update Method
+        methodList.add(MethodGenerator.generateUpdate(typeElement, fieldElementList, tableName));
+
         // Add all Methods in Builder
         methodList.forEach(builder::addMethod);
 
