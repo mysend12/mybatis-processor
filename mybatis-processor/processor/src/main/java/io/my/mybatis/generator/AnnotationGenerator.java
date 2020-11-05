@@ -2,6 +2,7 @@ package io.my.mybatis.generator;
 
 import com.squareup.javapoet.AnnotationSpec;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -25,6 +26,10 @@ public class AnnotationGenerator {
 
     public static AnnotationSpec updateAnnotataion(String updateQuery) {
         return generateAnnotation(Update.class, updateQuery);
+    }
+
+    public static AnnotationSpec deleteAnnotation(String deleteQuery) {
+        return generateAnnotation(Delete.class, deleteQuery);
     }
 
     public static AnnotationSpec generateAnnotation(Class<?> clz, String query) {

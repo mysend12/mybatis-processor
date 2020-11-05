@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import io.my.mybatis.annotation.crud.Find;
 import io.my.mybatis.annotation.crud.Modify;
+import io.my.mybatis.annotation.crud.Remove;
 import io.my.mybatis.annotation.field.Id;
 import io.my.mybatis.util.NamingStrategy;
 
@@ -31,13 +32,13 @@ public class MethodGenerator {
 
     public static List<MethodSpec> generateSelectList(
         Element annotationElement, 
-        List<Element> fieldList, 
+        List<Element> fieldElementList, 
         Class<?> returnType, 
-        String tableName) throws ClassNotFoundException {
+        String tableName) {
 
         List<MethodSpec> result = new ArrayList<>();
         
-        for (Element e : fieldList) {
+        for (Element e : fieldElementList) {
             MethodSpec method = generateSelect((TypeElement) annotationElement, e, tableName);
 
             if (method != null) {
@@ -48,7 +49,7 @@ public class MethodGenerator {
         return result;
     }
 
-    public static MethodSpec generateSelect(TypeElement typeElement, Element e, String tableName) throws ClassNotFoundException {
+    public static MethodSpec generateSelect(TypeElement typeElement, Element e, String tableName) {
         String fieldName = null;
         TypeName returnType = TypeName.get(typeElement.asType());
 
@@ -66,9 +67,6 @@ public class MethodGenerator {
         }
         
         String columnName = NamingStrategy.columnName(e);
-
-        logger.info(
-            "\nfieldName: {} \ncolumnName: {}", fieldName, columnName);
 
         if (fieldName == null || columnName == null) {
             return null;
@@ -106,9 +104,8 @@ public class MethodGenerator {
         AnnotationSpec insertAnnotation = AnnotationGenerator.insertAnnotation(insertQuery);
         
         TypeName classTypeName = TypeName.get(typeElement.asType());
-        String className = typeElement.getSimpleName().toString();
 
-        return MethodSpec.methodBuilder("insert" + className)
+        return MethodSpec.methodBuilder("insertEntity")
                         .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                         .addAnnotation(insertAnnotation)
                         .addParameter(classTypeName, ENTITY)
@@ -196,14 +193,59 @@ public class MethodGenerator {
 
     public static MethodSpec generateUpdate(TypeElement typeElement, AnnotationSpec updateAnnotation, String fieldName) {
         TypeName classTypeName = TypeName.get(typeElement.asType());
-        String className = typeElement.getSimpleName().toString();
 
-        return MethodSpec.methodBuilder("update" + className + "By" + String.valueOf(NamingStrategy.firstCharUpper(fieldName)))
+        return MethodSpec.methodBuilder("updateBy" + String.valueOf(NamingStrategy.firstCharUpper(fieldName)))
                         .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                         .addAnnotation(updateAnnotation)
                         .addParameter(classTypeName, ENTITY)
                         .returns(TypeName.INT)
                         .build();
     }
+
+    public static List<MethodSpec> generateDeleteList(List<Element> fieldElementList, String tableName) {
+        List<MethodSpec> result = new ArrayList<>();
+        
+        for (Element e : fieldElementList) {
+            MethodSpec method = generateDelete(e, tableName);
+
+            if (method != null) {
+                result.add(method);
+            }
+        }
+
+        return result;
+    }
+
+    public static MethodSpec generateDelete(Element e, String tableName) {
+        String fieldName = null;
+
+        Id id = e.getAnnotation(Id.class);
+        Remove remove = e.getAnnotation(Remove.class);
+
+        if (id != null) {
+            fieldName = e.toString();
+        } else if (remove != null) {
+            fieldName = e.toString();
+        }
+        
+        String columnName = NamingStrategy.columnName(e);
+
+        if (fieldName == null || columnName == null) {
+            return null;
+        }
+
+        String deleteQuery = QueryGenerator.deleteQuery(tableName, columnName, fieldName);
+
+        AnnotationSpec deleteAnnotation = AnnotationGenerator.deleteAnnotation(deleteQuery);
+        
+        return MethodSpec.methodBuilder("deleteBy" + String.valueOf(NamingStrategy.firstCharUpper(fieldName)))
+                        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                        .addAnnotation(deleteAnnotation)
+                        .addParameter(TypeName.get(e.asType()), fieldName)
+                        .returns(TypeName.INT)
+                        .build()
+        ;
+    }
+
 
 }
