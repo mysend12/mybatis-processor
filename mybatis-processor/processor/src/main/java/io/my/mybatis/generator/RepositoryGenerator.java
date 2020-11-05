@@ -18,7 +18,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.my.mybatis.annotation.RepositoryMaker;
+import io.my.mybatis.annotation.table.RepositoryMaker;
 import io.my.mybatis.util.NamingStrategy;
 import io.my.mybatis.util.RepositoryUtil;
 
