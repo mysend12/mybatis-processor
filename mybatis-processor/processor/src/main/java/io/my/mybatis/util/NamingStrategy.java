@@ -2,7 +2,7 @@ package io.my.mybatis.util;
 
 import javax.lang.model.element.Element;
 
-import io.my.mybatis.annotation.support.ColumnName;
+import io.my.mybatis.annotation.field.ColumnName;
 
 public class NamingStrategy {
     
