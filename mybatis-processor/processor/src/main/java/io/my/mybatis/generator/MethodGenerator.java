@@ -16,9 +16,9 @@ import com.squareup.javapoet.TypeName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.my.mybatis.annotation.Find;
-import io.my.mybatis.annotation.Id;
-import io.my.mybatis.annotation.Modify;
+import io.my.mybatis.annotation.crud.Find;
+import io.my.mybatis.annotation.crud.Modify;
+import io.my.mybatis.annotation.field.Id;
 import io.my.mybatis.util.NamingStrategy;
 
 public class MethodGenerator {
@@ -50,28 +50,23 @@ public class MethodGenerator {
 
     public static MethodSpec generateSelect(TypeElement typeElement, Element e, String tableName) throws ClassNotFoundException {
         String fieldName = null;
-        String columnName = null;
         TypeName returnType = TypeName.get(typeElement.asType());
 
         Id id = e.getAnnotation(Id.class);
         Find find = e.getAnnotation(Find.class);
-        Modify modify = e.getAnnotation(Modify.class);
 
         if (id != null) {
             fieldName = e.toString();
-            columnName = NamingStrategy.columnName(id.columnName(), fieldName);
         } else if (find != null) {
             fieldName = e.toString();
-            columnName = NamingStrategy.columnName(find.columnName(), fieldName);
             returnType = find.isList() ? 
                         ParameterizedTypeName.get(ClassName.get(List.class), returnType) : 
                         returnType
             ;
-        } else if (modify != null) {
-            fieldName = e.toString();
-            columnName = NamingStrategy.columnName(modify.columnName(), fieldName);
         }
         
+        String columnName = NamingStrategy.columnName(e);
+
         logger.info(
             "\nfieldName: {} \ncolumnName: {}", fieldName, columnName);
 
@@ -98,19 +93,11 @@ public class MethodGenerator {
 
         fieldElementList.forEach(e -> {
             Id id = e.getAnnotation(Id.class);
-            Find find = e.getAnnotation(Find.class);
-            Modify modify = e.getAnnotation(Modify.class);
 
             if (id != null && id.isAutoIncrement()) {
                 return;
-            } else if (find != null && !find.columnName().equals("")) {
-                columnList.add(find.columnName());
-                fieldList.add(e.toString());
-            } else if (modify != null && !modify.columnName().equals("")) {
-                columnList.add(modify.columnName());
-                fieldList.add(e.toString());
             } else {
-                columnList.add(NamingStrategy.camelToSnake(e.toString()));
+                columnList.add(NamingStrategy.columnName(e));
                 fieldList.add(e.toString());
             }
         });
@@ -155,20 +142,12 @@ public class MethodGenerator {
 
         for (Element e : fieldElementList) {
             Id id = e.getAnnotation(Id.class);
-            Find find = e.getAnnotation(Find.class);
-            Modify modify = e.getAnnotation(Modify.class);
 
             if (id != null) {
                 conditionField = e.toString();
-                conditionColumn = NamingStrategy.columnName(id.columnName(), conditionField);
-            } else if (find != null && !find.columnName().equals("")) {
-                columnList.add(find.columnName());
-                fieldList.add(e.toString());
-            } else if (modify != null && !modify.columnName().equals("")) {
-                columnList.add(modify.columnName());
-                fieldList.add(e.toString());
+                conditionColumn = NamingStrategy.columnName(e);
             } else {
-                columnList.add(NamingStrategy.camelToSnake(e.toString()));
+                columnList.add(NamingStrategy.columnName(e));
                 fieldList.add(e.toString());
             }
         }
@@ -192,29 +171,15 @@ public class MethodGenerator {
         List<String> fieldList = new ArrayList<>();
         List<String> columnList = new ArrayList<>();
         String conditionField = element.toString();
-        String conditionColumn = NamingStrategy.columnName(element.getAnnotation(Modify.class).columnName(), conditionField);
+        String conditionColumn = NamingStrategy.columnName(element);
 
         for (Element e : fieldElementList) {
             Id id = e.getAnnotation(Id.class);
-            Find find = e.getAnnotation(Find.class);
-            Modify modify = e.getAnnotation(Modify.class);
-
-            if (id != null && id.isUpdate()) {
-                columnList.add(NamingStrategy.columnName(id.columnName(), conditionField));
-                fieldList.add(e.toString());
-            } else if (id != null) {
+            
+            if (id != null && !id.isUpdate() || e.equals(element)) {
                 continue;
-            } else if (find != null && !find.columnName().equals("")) {
-                columnList.add(find.columnName());
-                fieldList.add(e.toString());
-            } else if (modify != null) {
-                if (e.equals(element)) {
-                    continue;
-                }
-                columnList.add(NamingStrategy.columnName(modify.columnName(), conditionField));
-                fieldList.add(e.toString());
             } else {
-                columnList.add(NamingStrategy.camelToSnake(e.toString()));
+                columnList.add(NamingStrategy.columnName(e));
                 fieldList.add(e.toString());
             }
         }
