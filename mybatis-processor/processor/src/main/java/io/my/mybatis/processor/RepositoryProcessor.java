@@ -25,7 +25,7 @@ import com.google.auto.service.AutoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.my.mybatis.annotation.RepositoryMaker;
+import io.my.mybatis.annotation.table.RepositoryMaker;
 import io.my.mybatis.exception.ProcessingException;
 import io.my.mybatis.generator.RepositoryGenerator;
 
