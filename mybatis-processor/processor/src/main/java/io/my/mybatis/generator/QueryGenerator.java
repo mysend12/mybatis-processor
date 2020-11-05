@@ -84,5 +84,17 @@ public class QueryGenerator {
 
         return sb.toString();
     }
+
+    // DELETE FROM test.test WHERE ID = 11
+    public static String deleteQuery(String tableName, String columnName, String fieldName) {
+        return new StringBuilder().append("DELETE FROM ")
+                                .append(tableName)
+                                .append(" WHERE ")
+                                .append(columnName)
+                                .append("=#{")
+                                .append(fieldName)
+                                .append("}")
+                                .toString();
+    }
     
 }

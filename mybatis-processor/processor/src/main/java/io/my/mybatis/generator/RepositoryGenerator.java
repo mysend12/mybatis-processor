@@ -62,6 +62,9 @@ public class RepositoryGenerator {
         // Generate Update Method
         methodList.addAll(MethodGenerator.generateUpdateList(typeElement, fieldElementList, tableName));
 
+        // Generate Delete Method
+        methodList.addAll(MethodGenerator.generateDeleteList(fieldElementList, tableName));
+
         // Add all Methods in Builder
         methodList.forEach(builder::addMethod);
 
