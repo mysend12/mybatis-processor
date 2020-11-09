@@ -54,7 +54,7 @@ public class RepositoryGenerator {
         List<MethodSpec> methodList = new ArrayList<>();
 
         // Generate Select Methods
-        methodList.addAll(MethodGenerator.generateSelectList(annotationElement, fieldElementList, Object.class, tableName));
+        methodList.addAll(MethodGenerator.generateSelectList(annotationElement, fieldElementList, tableName));
 
         // Generate Insert Method
         methodList.add(MethodGenerator.generateInsert(typeElement, fieldElementList, tableName));
