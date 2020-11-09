@@ -2,13 +2,41 @@ package io.my.mybatis.generator;
 
 import java.util.List;
 
+import io.my.mybatis.model.OrderBy;
+
 public class QueryGenerator {
 
     private QueryGenerator() {
         throw new IllegalAccessError();
     }
 
+    public static String selectQuery(
+        String tableName, 
+        String columnName, 
+        String fieldName, 
+        String orderColumnName, 
+        OrderBy order, 
+        int limit) {
+
+            if (fieldName == null || columnName == null) {
+                return null;
+            }
+
+            StringBuilder sb = new StringBuilder().append(selectQuery(tableName, columnName, fieldName));
+
+            if (!orderColumnName.equals("")) {
+                selectQuery(sb, orderColumnName, order);
+            }
+
+            if (limit > 0) {
+                selectQuery(sb, limit);
+            }
+
+            return sb.toString();
+    }
+
     public static String selectQuery(String tableName, String columnName, String fieldName) {
+
         return new StringBuilder().append("SELECT * FROM ")
                                 .append(tableName)
                                 .append(" WHERE ")
@@ -16,7 +44,25 @@ public class QueryGenerator {
                                 .append("=#{")
                                 .append(fieldName)
                                 .append("}")
-                                .toString();
+                                .toString()
+        ;
+    }
+
+    private static StringBuilder selectQuery(
+        StringBuilder sb,
+        String orderColumnName,
+        OrderBy order) {
+            return sb.append(" ORDER BY ")
+                    .append(orderColumnName)
+                    .append(" ")
+                    .append(order)
+            ;
+    }
+
+    private static StringBuilder selectQuery(StringBuilder sb, int limit) {
+        return sb.append(" LIMIT ")
+                .append(limit)
+        ;
     }
 
     public static String insertQuery(String tableName, List<String> columnList, List<String> fieldList) {
