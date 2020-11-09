@@ -55,24 +55,28 @@ public class MethodGenerator {
 
         Id id = e.getAnnotation(Id.class);
         Find find = e.getAnnotation(Find.class);
+        String selectQuery = null;
 
         if (id != null) {
             fieldName = e.toString();
+            selectQuery = QueryGenerator.selectQuery(tableName, NamingStrategy.columnName(e), fieldName);
         } else if (find != null) {
             fieldName = e.toString();
             returnType = find.isList() ? 
                         ParameterizedTypeName.get(ClassName.get(List.class), returnType) : 
                         returnType
             ;
-        }
-        
-        String columnName = NamingStrategy.columnName(e);
 
-        if (fieldName == null || columnName == null) {
-            return null;
+            selectQuery = QueryGenerator.selectQuery(
+                tableName, 
+                NamingStrategy.columnName(e), 
+                fieldName, 
+                find.orderColumnName(), 
+                find.orderBy(), 
+                find.limit());
         }
 
-        String selectQuery = QueryGenerator.selectQuery(tableName, columnName, fieldName);
+        if (selectQuery == null) return null;
 
         AnnotationSpec selectAnnotation = AnnotationGenerator.selectAnnotation(selectQuery);
         
@@ -88,7 +92,7 @@ public class MethodGenerator {
     public static MethodSpec generateInsert(TypeElement typeElement, List<Element> fieldElementList, String tableName) {
         List<String> fieldList = new ArrayList<>();
         List<String> columnList = new ArrayList<>();
-
+        
         fieldElementList.forEach(e -> {
             Id id = e.getAnnotation(Id.class);
 
