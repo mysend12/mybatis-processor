@@ -20,7 +20,6 @@ import io.my.mybatis.annotation.crud.Find;
 import io.my.mybatis.annotation.crud.Modify;
 import io.my.mybatis.annotation.crud.Remove;
 import io.my.mybatis.annotation.field.Id;
-import io.my.mybatis.model.OrderBy;
 import io.my.mybatis.util.NamingStrategy;
 
 public class MethodGenerator {
@@ -41,14 +40,13 @@ public class MethodGenerator {
         
         for (Element e : fieldElementList) {
             Find[] finds = e.getAnnotationsByType(Find.class);
-            if (finds.length > 1) {
+            if (finds != null && finds.length > 1) {
                 List<MethodSpec> methods = generateSelectList(e, returnType, tableName);
                 if (!methods.isEmpty()) { result.addAll(methods); }
             } else {
                 MethodSpec method = generateSelect(e, returnType, tableName);
                 if (method != null) { result.add(method); }
             }
-            
         }
 
         return result;
@@ -67,19 +65,21 @@ public class MethodGenerator {
             
             if (selectQuery == null) continue;
                         
-            String methodName = methodName(find, fieldName);
-            
+            String methodName = methodName(fieldName, find);
+        
             AnnotationSpec selectAnnotation = AnnotationGenerator.selectAnnotation(selectQuery);
-            result.add(MethodSpec.methodBuilder(methodName)
-                        .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                        .addAnnotation(selectAnnotation)
-                        .addParameter(TypeName.get(e.asType()), fieldName)
-                        .returns(
-                            isList ? 
-                                ParameterizedTypeName.get(ClassName.get(List.class), returnType) : 
-                                returnType)
-                        .build())
+            MethodSpec.Builder methodBuilder = 
+                        MethodSpec.methodBuilder(methodName)
+                                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                                .addAnnotation(selectAnnotation)
+                                .addParameter(TypeName.get(e.asType()), fieldName)
+                                .returns(
+                                    isList ? 
+                                        ParameterizedTypeName.get(ClassName.get(List.class), returnType) : 
+                                        returnType)
             ;
+
+            result.add(methodSpec(methodBuilder, find));
         }
 
         return result;
@@ -101,11 +101,11 @@ public class MethodGenerator {
         String selectQuery = generateSelectQuery(find, tableName, NamingStrategy.columnName(e), fieldName);
         if (selectQuery == null) return null;
         
-        String methodName = methodName(find, fieldName);
+        String methodName = methodName(fieldName, find);
         
         AnnotationSpec selectAnnotation = AnnotationGenerator.selectAnnotation(selectQuery);
-        
-        return MethodSpec.methodBuilder(methodName)
+        MethodSpec.Builder methodBuilder = 
+                MethodSpec.methodBuilder(methodName)
                         .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                         .addAnnotation(selectAnnotation)
                         .addParameter(TypeName.get(e.asType()), fieldName)
@@ -113,8 +113,9 @@ public class MethodGenerator {
                             isList ? 
                                 ParameterizedTypeName.get(ClassName.get(List.class), returnType) : 
                                 returnType)
-                        .build()
         ;
+
+        return methodSpec(methodBuilder, find);
     }
 
     private static String generateSelectQuery(
@@ -126,38 +127,43 @@ public class MethodGenerator {
         if (find == null) {
             return QueryGenerator.selectQuery(tableName, columnName, fieldName);
         }
-
-        String orderColumnName = find.orderColumnName();
-        int limit = find.limit();
-        OrderBy order = find.orderBy();
         
         return QueryGenerator.selectQuery(
-            tableName, columnName, fieldName, orderColumnName, order, limit);
+            tableName, columnName, fieldName, find.isOrderBy(), find.isLimit());
     }
 
-    private static String methodName(Find find, String fieldName) {
+    private static String methodName(String fieldName, Find find) {
         StringBuilder sb = new StringBuilder().append("findBy").append(NamingStrategy.firstCharUpper(fieldName));
-
         if (find != null) {
-            methodName(sb, find);
+            methodName(sb, find.isOrderBy(), find.isLimit());
         }
-
         return sb.toString();
     }
 
-    private static void methodName(StringBuilder sb, Find find) {
+    private static void methodName(StringBuilder sb, boolean isOrderBy, boolean isLimit) {
 
-        String order = find.orderBy().getOrder();
-        String orderColumnName = find.orderColumnName();
-        int limit = find.limit();
-
-        if (!orderColumnName.equals("")) {
-            sb.append("OrderBy").append(orderColumnName).append(order);
+        if (isOrderBy) {
+            sb.append("OrderBy");
         }
 
-        if (limit > 0) {
-            sb.append("Limit").append(limit);
+        if (isLimit) {
+            sb.append("Limit");
         }
+    }
+
+    private static MethodSpec methodSpec(MethodSpec.Builder methodBuilder, Find find) {
+        if (find == null) return methodBuilder.build();
+
+        if (find.isOrderBy()) {
+            methodBuilder.addParameter(String.class, "orderField")
+                        .addParameter(String.class, "orderBy")
+            ;
+        }
+        if (find.isLimit()) {
+            methodBuilder.addParameter(TypeName.INT, "limit");
+        }
+
+        return methodBuilder.build();
     }
 
     public static MethodSpec generateInsert(TypeElement typeElement, List<Element> fieldElementList, String tableName) {

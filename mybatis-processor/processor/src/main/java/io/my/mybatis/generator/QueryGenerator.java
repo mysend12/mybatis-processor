@@ -2,8 +2,6 @@ package io.my.mybatis.generator;
 
 import java.util.List;
 
-import io.my.mybatis.model.OrderBy;
-
 public class QueryGenerator {
 
     private QueryGenerator() {
@@ -14,9 +12,8 @@ public class QueryGenerator {
         String tableName, 
         String columnName, 
         String fieldName, 
-        String orderColumnName, 
-        OrderBy order, 
-        int limit) {
+        boolean isOrder, 
+        boolean isLimit) {
 
             if (fieldName == null || columnName == null) {
                 return null;
@@ -24,12 +21,12 @@ public class QueryGenerator {
 
             StringBuilder sb = new StringBuilder().append(selectQuery(tableName, columnName, fieldName));
 
-            if (!orderColumnName.equals("")) {
-                selectQuery(sb, orderColumnName, order);
+            if (isOrder) {
+                sb.append(" ORDER BY #{orderField} #{orderBy}");
             }
 
-            if (limit > 0) {
-                selectQuery(sb, limit);
+            if (isLimit) {
+                sb.append(" LIMIT #{limit}");
             }
 
             return sb.toString();
@@ -45,23 +42,6 @@ public class QueryGenerator {
                                 .append(fieldName)
                                 .append("}")
                                 .toString()
-        ;
-    }
-
-    private static StringBuilder selectQuery(
-        StringBuilder sb,
-        String orderColumnName,
-        OrderBy order) {
-            return sb.append(" ORDER BY ")
-                    .append(orderColumnName)
-                    .append(" ")
-                    .append(order)
-            ;
-    }
-
-    private static StringBuilder selectQuery(StringBuilder sb, int limit) {
-        return sb.append(" LIMIT ")
-                .append(limit)
         ;
     }
 
