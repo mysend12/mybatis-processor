@@ -15,5 +15,11 @@ class UserInfoRepositoryTests extends RepositoryBase {
         userInfoRepo.selectUserInfos().forEach(System.out::println);
         assertNotNull(userInfoRepo.selectUserInfos());
     }
+
+    @Test
+    void selectUserInfoListTest() {
+        userInfoRepo.selectUserInfoList().forEach(System.out::println);
+        assertNotNull(userInfoRepo.selectUserInfoList());
+    }
     
 }

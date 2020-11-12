@@ -17,5 +17,12 @@ class UserRepositoryTests extends RepositoryBase {
         userList.forEach(System.out::println);
         assertNotNull(userList);
     }
+
+    @Test
+    void selectUserListTest() {
+        List<User> userList = userRepo.selectUserList();
+        userList.forEach(System.out::println);
+        assertNotNull(userList);
+    }
     
 }

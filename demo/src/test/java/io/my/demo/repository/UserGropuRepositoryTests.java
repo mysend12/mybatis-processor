@@ -15,5 +15,11 @@ class UserGropuRepositoryTests extends RepositoryBase {
         userGroupRepo.selectUserGroups().forEach(System.out::println);
         assertNotNull(userGroupRepo.selectUserGroups());
     }
+
+    @Test
+    void selectUserGroupListTest() {
+        userGroupRepo.selectUserGroupList().forEach(System.out::println);
+        assertNotNull(userGroupRepo.selectUserGroupList());
+    }
     
 }
