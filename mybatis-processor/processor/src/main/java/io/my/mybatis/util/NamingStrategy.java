@@ -1,9 +1,37 @@
 package io.my.mybatis.util;
 
+import javax.lang.model.element.Element;
+
+import io.my.mybatis.annotation.field.ColumnName;
+
 public class NamingStrategy {
     
     private NamingStrategy() {
         throw new IllegalAccessError();
+    }
+
+    public static String columnName(Element e) {
+        if (e == null) {
+            return null;
+        }
+        return columnName(e, e.toString());
+    }
+
+    public static String columnName(Element e, String field) {
+        if (e == null) {
+            return null;
+        }
+        return columnName(e.getAnnotation(ColumnName.class), field);
+    }
+
+    public static String columnName(ColumnName column, String field) {
+        if (column != null ) {
+            return column.columnName();
+        } else if (field == null) {
+            return null;
+        }
+
+        return NamingStrategy.camelToSnake(field);
     }
 
     public static String camelToSnake(String str) {

@@ -1,4 +1,4 @@
-package io.my.mybatis.annotation;
+package io.my.mybatis.annotation.crud;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)
-public @interface Id {
-    String fieldName() default "";
+public @interface Remove {
+    
 }

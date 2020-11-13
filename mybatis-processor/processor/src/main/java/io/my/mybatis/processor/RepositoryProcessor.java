@@ -3,7 +3,6 @@ package io.my.mybatis.processor;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -25,13 +24,14 @@ import com.google.auto.service.AutoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.my.mybatis.annotation.RepositoryMaker;
+import io.my.mybatis.annotation.table.RepositoryMaker;
 import io.my.mybatis.exception.ProcessingException;
 import io.my.mybatis.generator.RepositoryGenerator;
 
 @AutoService(Processor.class)
 public class RepositoryProcessor extends AbstractProcessor {
     Logger log = LoggerFactory.getLogger(RepositoryProcessor.class);
+    private final String packageLocation = "io.my.mybatis.repositories";
 
     private Elements elementUtils;
     private Filer filer;
@@ -90,18 +90,24 @@ public class RepositoryProcessor extends AbstractProcessor {
     }
 
     private String getPackageOf(Element annotationElement) {
-        StringBuffer buffer = new StringBuffer();
-        String entityPackage = elementUtils.getPackageOf(annotationElement).toString();
-        StringTokenizer tokenizer = new StringTokenizer(entityPackage, ".");
         
-        while (tokenizer.hasMoreTokens()) {
-            if (tokenizer.countTokens() == 1) {
-                break;
-            }
-            buffer.append(tokenizer.nextToken()).append(".");
-        }
+        String packageName = 
+            packageLocationCheck(
+                annotationElement.getAnnotation(RepositoryMaker.class).packageLocation())
+        ;
 
-        return buffer.append("repository").toString();
+        if (packageName != null) {
+            return packageName;
+        } else {
+            return packageLocation;
+        }
+    }
+
+    private String packageLocationCheck(String packageLocation) {
+        if (packageLocation.equals("")) {
+            return null;
+        }
+        return packageLocation;
     }
 
     @Override
