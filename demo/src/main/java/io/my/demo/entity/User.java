@@ -1,6 +1,8 @@
 package io.my.demo.entity;
 
 import io.my.mybatis.annotation.crud.Find;
+import io.my.mybatis.annotation.crud.Modify;
+import io.my.mybatis.annotation.crud.Remove;
 import io.my.mybatis.annotation.field.Id;
 import io.my.mybatis.annotation.model.OrderBy;
 import io.my.mybatis.annotation.table.RepositoryMaker;
@@ -14,7 +16,7 @@ public class User {
     @Id
     private Long id;
 
-    @Find
+    @Find @Modify @Remove
     private String loginId;
     private String password;
 
