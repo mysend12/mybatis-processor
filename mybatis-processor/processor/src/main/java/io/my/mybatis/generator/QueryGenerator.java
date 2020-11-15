@@ -12,6 +12,8 @@ public class QueryGenerator {
         String tableName, 
         String columnName, 
         String fieldName, 
+        String orderBy, 
+        String orderColumnName, 
         boolean isOrder, 
         boolean isLimit) {
 
@@ -22,7 +24,7 @@ public class QueryGenerator {
             StringBuilder sb = new StringBuilder().append(selectQuery(tableName, columnName, fieldName));
 
             if (isOrder) {
-                sb.append(" ORDER BY #{orderField} #{orderBy}");
+                sb.append(" ORDER BY ").append(orderColumnName).append(" ").append(orderBy);
             }
 
             if (isLimit) {

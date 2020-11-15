@@ -1,25 +1,48 @@
 package io.my.demo.repository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 
 import io.my.demo.base.RepositoryBase;
-import lombok.extern.slf4j.Slf4j;
+import io.my.demo.entity.UserGroup;
 
-@Slf4j
 class UserGropuRepositoryTests extends RepositoryBase {
     
     @Test
-    void selectUserGroupsTest() {
-        userGroupRepo.selectUserGroups().forEach(System.out::println);
-        assertNotNull(userGroupRepo.selectUserGroups());
+    void selectUserGroupTest() {
+        assertNotNull(userGroupRepo.findById(1L));
     }
 
     @Test
-    void selectUserGroupListTest() {
-        userGroupRepo.selectUserGroupList().forEach(System.out::println);
-        assertNotNull(userGroupRepo.selectUserGroupList());
+    void findByGroupNameTest() {
+        assertNotNull(userGroupRepo.findByGroupName("HOME1"));
+    }
+
+    @Test
+    void findByGroupNickNameTest() {
+        assertNotNull(userGroupRepo.findByGroupNickName("HOME1_NICK"));
+    }
+
+    @Test
+    void inserEntityTest() {
+        UserGroup entity = new UserGroup();
+        entity.setGroupName("groupName");
+        entity.setGroupNickName("groupNickName");
+        assertEquals(1, userGroupRepo.insertEntity(entity));
+    }
+
+    @Test
+    void updateByIdTest() {
+        UserGroup entity = userGroupRepo.findById(1L);
+        entity.setGroupName("updateGroupName");
+        assertEquals(1, userGroupRepo.updateById(entity));
+    }
+
+    @Test
+    void deleteByIdTest() {
+        assertEquals(1, userGroupRepo.deleteById(1L));
     }
     
 }

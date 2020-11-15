@@ -4,7 +4,7 @@
   <parent>
     <artifactId>mybatis</artifactId>
     <groupId>io.my</groupId>
-    <version>1.0</version>
+    <version>0.0.1</version>
   </parent>
   
   <groupId>io.my.mybatis</groupId>

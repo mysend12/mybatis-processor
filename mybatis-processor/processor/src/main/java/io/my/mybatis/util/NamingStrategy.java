@@ -37,8 +37,6 @@ public class NamingStrategy {
     public static String camelToSnake(String str) {
         StringBuilder sb = new StringBuilder();
         char[] charArr = firstCharLower(str);
-        str.toUpperCase();
-        str.toLowerCase();
 
         for (char c : charArr) {
             if (c >= 'A' && c <= 'Z') {
@@ -81,6 +79,28 @@ public class NamingStrategy {
             return (char) (c-32);
         }
         return c;
+    }
+
+    public static String snakeToCamel(String str) {
+        StringBuilder sb = new StringBuilder();
+        char[] charArr = firstCharLower(str);
+
+        boolean isUp = false;
+        for (int i=0; i<charArr.length; i++) {
+            if (charArr[i] == '_') {
+                isUp = true;
+                continue;
+            }
+
+            if (isUp) {
+                sb.append(charUpper(charArr[i]));
+                isUp = false;
+            } else {
+                sb.append(charLower(charArr[i]));
+            }
+        }
+
+        return sb.toString();
     }
     
 }

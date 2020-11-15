@@ -1,22 +1,26 @@
 package io.my.demo.entity;
 
-import org.apache.ibatis.type.Alias;
-
+import io.my.mybatis.annotation.crud.Find;
+import io.my.mybatis.annotation.field.Id;
+import io.my.mybatis.annotation.table.RepositoryMaker;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@ToString(exclude = "user")
-@Alias("USER_INFO")
+@RepositoryMaker(packageLocation = "io.my.demo.repository")
 public class UserInfo {
+    @Id
     private Long id;
+
+    @Find
     private Long userId;
+
+    @Find(isList = true)
     private String name;
+    @Find
     private String nickName;
+    @Find
     private String email;
     private Character gender;
-
-    private User user;
 }

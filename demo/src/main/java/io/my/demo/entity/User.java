@@ -1,21 +1,26 @@
 package io.my.demo.entity;
 
-import org.apache.ibatis.type.Alias;
-
+import io.my.mybatis.annotation.crud.Find;
+import io.my.mybatis.annotation.field.Id;
+import io.my.mybatis.annotation.model.OrderBy;
+import io.my.mybatis.annotation.table.RepositoryMaker;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@Alias("USER")
-@ToString(exclude = "userGroup")
+@RepositoryMaker(packageLocation = "io.my.demo.repository")
 public class User {
+    @Id
     private Long id;
+
+    @Find
     private String loginId;
     private String password;
+
+    @Find(isList = true)
+    @Find(isList = true, isLimit = true)
+    @Find(isList = true, isOrderBy = true, orderBy = OrderBy.DESC)
     private Long userGroupId;
 
-    private UserGroup userGroup;
-    private UserInfo userInfo;
 }

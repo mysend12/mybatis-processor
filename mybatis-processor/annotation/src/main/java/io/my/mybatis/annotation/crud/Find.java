@@ -6,6 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import io.my.mybatis.annotation.model.OrderBy;
 import io.my.mybatis.wrapper.Finds;
 
 @Repeatable(Finds.class)
@@ -15,4 +16,6 @@ public @interface Find {
     boolean isList() default false;
     boolean isOrderBy() default false;
     boolean isLimit() default false;
+    OrderBy orderBy() default OrderBy.ASC;
+    String orderColumnName() default "id";
 }

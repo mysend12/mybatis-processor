@@ -1,17 +1,20 @@
 package io.my.demo.entity;
 
-import java.util.List;
+import io.my.mybatis.annotation.crud.Find;
+import io.my.mybatis.annotation.field.Id;
+import io.my.mybatis.annotation.table.RepositoryMaker;
+import lombok.Getter;
+import lombok.Setter;
 
-import org.apache.ibatis.type.Alias;
-
-import lombok.Data;
-
-@Data
-@Alias("USER_GROUP")
+@Getter
+@Setter
+@RepositoryMaker(packageLocation = "io.my.demo.repository")
 public class UserGroup {
+    @Id
     private Long id;
+    
+    @Find
     private String groupName;
+    @Find
     private String groupNickName;
-
-    private List<User> userList;
 }

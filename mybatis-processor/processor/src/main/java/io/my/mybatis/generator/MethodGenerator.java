@@ -129,21 +129,25 @@ public class MethodGenerator {
         }
         
         return QueryGenerator.selectQuery(
-            tableName, columnName, fieldName, find.isOrderBy(), find.isLimit());
+            tableName, columnName, fieldName, find.orderBy().getOrderBy(), find.orderColumnName(), find.isOrderBy(), find.isLimit());
     }
 
     private static String methodName(String fieldName, Find find) {
         StringBuilder sb = new StringBuilder().append("findBy").append(NamingStrategy.firstCharUpper(fieldName));
         if (find != null) {
-            methodName(sb, find.isOrderBy(), find.isLimit());
+            methodName(sb, find.orderColumnName(), find.isOrderBy(), find.isLimit());
         }
         return sb.toString();
     }
 
-    private static void methodName(StringBuilder sb, boolean isOrderBy, boolean isLimit) {
+    private static void methodName(StringBuilder sb, String orderColumnName, boolean isOrderBy, boolean isLimit) {
 
         if (isOrderBy) {
-            sb.append("OrderBy");
+            sb.append("OrderBy").append(
+                NamingStrategy.firstCharUpper(
+                    NamingStrategy.snakeToCamel(orderColumnName)
+                )
+            );
         }
 
         if (isLimit) {
@@ -152,17 +156,9 @@ public class MethodGenerator {
     }
 
     private static MethodSpec methodSpec(MethodSpec.Builder methodBuilder, Find find) {
-        if (find == null) return methodBuilder.build();
-
-        if (find.isOrderBy()) {
-            methodBuilder.addParameter(String.class, "orderField")
-                        .addParameter(String.class, "orderBy")
-            ;
-        }
-        if (find.isLimit()) {
+        if (find != null && find.isLimit()) 
             methodBuilder.addParameter(TypeName.INT, "limit");
-        }
-
+        
         return methodBuilder.build();
     }
 

@@ -31,5 +31,22 @@ class NamingStrategyTests {
         );
     }
 
+    @MethodSource
+    @ParameterizedTest(name = "{0} 카멜 변환 테스트")
+    @DisplayName("스네이크 -> 카멜케이스 케이스 변환 테스트")
+    void snakeToCamelTest(String str, String expected) {
+        String actual = NamingStrategy.snakeToCamel(str);
+        logger.info("{} -> {}", str, actual);
+        assertEquals(expected, actual);
+    }
+
+    private static Stream<Arguments> snakeToCamelTest(){
+        return Stream.of(
+            Arguments.of("hello_world", "helloWorld"), 
+            Arguments.of("HELLO_WORLD", "helloWorld"), 
+            Arguments.of("test_case", "testCase"), 
+            Arguments.of("WINTER_CASE", "winterCase")
+        );
+    }
 
 }
